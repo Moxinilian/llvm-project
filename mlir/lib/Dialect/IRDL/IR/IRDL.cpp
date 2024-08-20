@@ -7,7 +7,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "mlir/Dialect/IRDL/IR/IRDL.h"
-#include "mlir/Dialect/IRDL/IRDLSymbols.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/Diagnostics.h"
@@ -150,23 +149,6 @@ checkSymbolIsTypeOrAttribute(SymbolTableCollection &symbolTable,
                                  << targetOp->getName() << "')";
 
   return success();
-}
-
-LogicalResult BaseOp::verifySymbolUses(SymbolTableCollection &symbolTable) {
-  std::optional<SymbolRefAttr> baseRef = getBaseRef();
-  if (!baseRef)
-    return success();
-
-  return checkSymbolIsTypeOrAttribute(symbolTable, *this, *baseRef);
-}
-
-LogicalResult
-ParametricOp::verifySymbolUses(SymbolTableCollection &symbolTable) {
-  std::optional<SymbolRefAttr> baseRef = getBaseType();
-  if (!baseRef)
-    return success();
-
-  return checkSymbolIsTypeOrAttribute(symbolTable, *this, *baseRef);
 }
 
 /// Parse a value with its variadicity first. By default, the variadicity is

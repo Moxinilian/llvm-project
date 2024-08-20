@@ -31,7 +31,7 @@ class AtMostOneChildOf<string op> : ParamNativeOpTrait<"AtMostOneChildOf", op>;
 //===----------------------------------------------------------------------===//
 
 def IRDL_DialectOp : IRDL_Op<"dialect",
-    [IsolatedFromAbove, NoTerminator, Symbol, SymbolTable]> {
+    [IsolatedFromAbove, NoTerminator, HasParent<"ModuleOp">]> {
   let summary = "Define a new dialect";
   let description = [{
     The `irdl.dialect` operation defines a dialect. All operations, attributes,
@@ -40,7 +40,7 @@ def IRDL_DialectOp : IRDL_Op<"dialect",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
+    irdl.dialect cmath {
       ...
     }
     ```
@@ -48,10 +48,10 @@ def IRDL_DialectOp : IRDL_Op<"dialect",
     The above program defines a `cmath` dialect.
   }];
 
-  let arguments = (ins SymbolNameAttr:$sym_name);
+  let arguments = (ins StrAttr:$name);
   let regions = (region SizedRegion<1>:$body);
   let assemblyFormat =
-    "$sym_name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
+    "$name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
   let hasVerifier = 1;
 }
 
@@ -61,7 +61,7 @@ def IRDL_DialectOp : IRDL_Op<"dialect",
 
 def IRDL_TypeOp : IRDL_Op<"type",
     [HasParent<"DialectOp">, NoTerminator, NoRegionArguments,
-     AtMostOneChildOf<"ParametersOp">, Symbol]> {
+     AtMostOneChildOf<"ParametersOp">]> {
   let summary = "Define a new type";
   let description = [{
     `irdl.type` defines a new type belonging to the `irdl.dialect` parent.
@@ -72,8 +72,8 @@ def IRDL_TypeOp : IRDL_Op<"type",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
-      irdl.type @complex {
+    irdl.dialect cmath {
+      irdl.type complex {
         %0 = irdl.is i32
         %1 = irdl.is i64
         %2 = irdl.any_of(%0, %1)
@@ -86,15 +86,15 @@ def IRDL_TypeOp : IRDL_Op<"type",
     type has a single parameter that should be either `i32` or `i64`.
   }];
 
-  let arguments = (ins SymbolNameAttr:$sym_name);
+  let arguments = (ins StrAttr:$name);
   let regions = (region SizedRegion<1>:$body);
   let assemblyFormat =
-    "$sym_name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
+    "$name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
 }
 
 def IRDL_AttributeOp : IRDL_Op<"attribute",
     [HasParent<"DialectOp">, NoTerminator, NoRegionArguments,
-     AtMostOneChildOf<"ParametersOp">, Symbol]> {
+     AtMostOneChildOf<"ParametersOp">]> {
   let summary = "Define a new attribute";
   let description = [{
     `irdl.attribute` defines a new attribute belonging to the `irdl.dialect`
@@ -106,8 +106,8 @@ def IRDL_AttributeOp : IRDL_Op<"attribute",
     Example:
 
     ```mlir
-    irdl.dialect @testd {
-      irdl.attribute @enum_attr {
+    irdl.dialect testd {
+      irdl.attribute enum_attr {
         %0 = irdl.is "foo"
         %1 = irdl.is "bar"
         %2 = irdl.any_of(%0, %1)
@@ -121,10 +121,10 @@ def IRDL_AttributeOp : IRDL_Op<"attribute",
     either a `"foo"` or a `"bar"`.
   }];
 
-  let arguments = (ins SymbolNameAttr:$sym_name);
+  let arguments = (ins StrAttr:$name);
   let regions = (region SizedRegion<1>:$body);
   let assemblyFormat =
-    "$sym_name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
+    "$name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
 }
 
 def IRDL_ParametersOp : IRDL_Op<"parameters",
@@ -138,8 +138,8 @@ def IRDL_ParametersOp : IRDL_Op<"parameters",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
-      irdl.type @complex {
+    irdl.dialect cmath {
+      irdl.type complex {
         %0 = irdl.is i32
         %1 = irdl.is i64
         %2 = irdl.any_of(%0, %1)
@@ -162,8 +162,7 @@ def IRDL_ParametersOp : IRDL_Op<"parameters",
 
 def IRDL_OperationOp : IRDL_Op<"operation",
     [HasParent<"DialectOp">, NoTerminator, NoRegionArguments,
-    AtMostOneChildOf<"OperandsOp, ResultsOp, AttributesOp, RegionsOp">,
-    Symbol]> {
+    AtMostOneChildOf<"OperandsOp, ResultsOp, AttributesOp, RegionsOp">]> {
   let summary = "Define a new operation";
   let description = [{
     `irdl.operation` defines a new operation belonging to the `irdl.dialect`
@@ -176,11 +175,11 @@ def IRDL_OperationOp : IRDL_Op<"operation",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
+    irdl.dialect cmath {
 
-      irdl.type @complex { /* ... */ }
+      irdl.type complex { /* ... */ }
 
-      irdl.operation @norm {
+      irdl.operation norm {
         %0 = irdl.any
         %1 = irdl.parametric @complex<%0>
         irdl.results(%0)
@@ -194,10 +193,10 @@ def IRDL_OperationOp : IRDL_Op<"operation",
     returns a single result of the element type of the operand.
   }];
 
-  let arguments = (ins SymbolNameAttr:$sym_name);
+  let arguments = (ins StrAttr:$name);
   let regions = (region SizedRegion<1>:$body);
   let assemblyFormat =
-    "$sym_name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
+    "$name attr-dict-with-keyword custom<SingleBlockRegion>($body)";
 }
 
 def IRDL_OperandsOp : IRDL_Op<"operands", [HasParent<"OperationOp">]> {
@@ -210,13 +209,13 @@ def IRDL_OperandsOp : IRDL_Op<"operands", [HasParent<"OperationOp">]> {
     `norm` operation:
 
     ```mlir
-    irdl.dialect @cmath {
+    irdl.dialect cmath {
 
-      irdl.type @complex { /* ... */ }
+      irdl.type complex { /* ... */ }
 
-      irdl.operation @mul {
+      irdl.operation mul {
         %0 = irdl.any
-        %1 = irdl.parametric @complex<%0>
+        %1 = irdl.parametric @complex<%0> TODO: update
         irdl.results(%1)
         irdl.operands(%1, %1)
       }
@@ -256,13 +255,13 @@ def IRDL_ResultsOp : IRDL_Op<"results", [HasParent<"OperationOp">]> {
     `norm` operation:
 
     ```mlir
-    irdl.dialect @cmath {
+    irdl.dialect cmath {
 
-      irdl.type @complex { /* ... */ }
+      irdl.type complex { /* ... */ }
 
-      irdl.operation @get_values {
+      irdl.operation get_values {
         %0 = irdl.any
-        %1 = irdl.parametric @complex<%0>
+        %1 = irdl.parametric complex<%0> TODO: update
         irdl.results(%0, %0)
         irdl.operands(%1)
       }
@@ -303,9 +302,9 @@ def IRDL_AttributesOp : IRDL_Op<"attributes", [HasParent<"OperationOp">]> {
     `attr_op` operation:
 
     ```mlir
-    irdl.dialect @example {
+    irdl.dialect example {
 
-      irdl.operation @attr_op {
+      irdl.operation attr_op {
         %0 = irdl.any
         %1 = irdl.is i64
         irdl.attibutes {
@@ -351,8 +350,8 @@ def IRDL_RegionOp : IRDL_Op<"region",
     Example:
 
     ```mlir
-    irdl.dialect @example {
-      irdl.operation @op_with_regions {
+    irdl.dialect example {
+      irdl.operation op_with_regions {
           %r0 = irdl.region
           %r1 = irdl.region()
           %v0 = irdl.is i32
@@ -396,8 +395,8 @@ def IRDL_RegionsOp : IRDL_Op<"regions", [HasParent<"OperationOp">]> {
     Example:
 
     ```mlir
-    irdl.dialect @example {
-      irdl.operation @op_with_regions {
+    irdl.dialect example {
+      irdl.operation op_with_regions {
         %r1 = irdl.region with size 3
         %0 = irdl.any
         %r2 = irdl.region(%0)
@@ -434,8 +433,8 @@ def IRDL_IsOp : IRDL_ConstraintOp<"is",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
-      irdl.type @complex_i32 {
+    irdl.dialect cmath {
+      irdl.type complex_i32 {
         %0 = irdl.is i32
         irdl.parameters(%0)
       }
@@ -452,8 +451,7 @@ def IRDL_IsOp : IRDL_ConstraintOp<"is",
 }
 
 def IRDL_BaseOp : IRDL_ConstraintOp<"base",
-    [ParentOneOf<["TypeOp", "AttributeOp", "OperationOp"]>,
-     DeclareOpInterfaceMethods<SymbolUserOpInterface>]> {
+    [ParentOneOf<["TypeOp", "AttributeOp", "OperationOp"]>]> {
   let summary = "Constraints an attribute/type base";
   let description = [{
     `irdl.base` defines a constraint that only accepts a single type
@@ -466,13 +464,13 @@ def IRDL_BaseOp : IRDL_ConstraintOp<"base",
 
     ```mlir
     irdl.dialect @cmath {
-      irdl.type @complex {
+      irdl.type complex {
         %0 = irdl.base "!builtin.integer"
         irdl.parameters(%0)
       }
 
-      irdl.type @complex_wrapper {
-        %0 = irdl.base @complex
+      irdl.type complex_wrapper {
+        %0 = irdl.base complex TODO: update
         irdl.parameters(%0)
       }
     }
@@ -485,13 +483,13 @@ def IRDL_BaseOp : IRDL_ConstraintOp<"base",
     parameter, which is a type of base type `cmath.complex`.
   }];
 
-  let arguments = (ins OptionalAttr<SymbolRefAttr>:$base_ref,
+  let arguments = (ins OptionalAttr<DialectItemAttr>:$base_ref,
                        OptionalAttr<StrAttr>:$base_name);
   let results = (outs IRDL_AttributeType:$output);
   let assemblyFormat = " ($base_ref^)? ($base_name^)? ` ` attr-dict";
   
   let builders = [
-    OpBuilder<(ins "SymbolRefAttr":$base_ref), [{
+    OpBuilder<(ins "DialectItemAttr":$base_ref), [{
       build($_builder, $_state, base_ref, {});
     }]>,
     OpBuilder<(ins "StringAttr":$base_name), [{
@@ -503,8 +501,7 @@ def IRDL_BaseOp : IRDL_ConstraintOp<"base",
 }
 
 def IRDL_ParametricOp : IRDL_ConstraintOp<"parametric",
-    [ParentOneOf<["TypeOp", "AttributeOp", "OperationOp"]>,
-     DeclareOpInterfaceMethods<SymbolUserOpInterface>, Pure]> {
+    [ParentOneOf<["TypeOp", "AttributeOp", "OperationOp"]>, Pure]> {
   let summary = "Constraints an attribute/type base and its parameters";
   let description = [{
     `irdl.parametric` defines a constraint that accepts only a single type
@@ -515,13 +512,13 @@ def IRDL_ParametricOp : IRDL_ConstraintOp<"parametric",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
+    irdl.dialect cmath {
 
-      irdl.type @complex { /* ... */ }
+      irdl.type complex { /* ... */ }
 
       irdl.operation @norm {
         %0 = irdl.any
-        %1 = irdl.parametric @complex<%0>
+        %1 = irdl.parametric @complex<%0> TODO: update
         irdl.operands(%1)
         irdl.results(%0)
       }
@@ -532,7 +529,7 @@ def IRDL_ParametricOp : IRDL_ConstraintOp<"parametric",
     for any `T` takes a `cmath.complex` with parameter `T` and returns a `T`.
   }];
 
-  let arguments = (ins SymbolRefAttr:$base_type,
+  let arguments = (ins DialectItemAttr:$base_type,
                        Variadic<IRDL_AttributeType>:$args);
   let results = (outs IRDL_AttributeType:$output);
   let assemblyFormat = " $base_type `<` $args `>` ` ` attr-dict ";
@@ -547,8 +544,8 @@ def IRDL_AnyOp : IRDL_ConstraintOp<"any",
     Example:
 
     ```mlir
-    irdl.dialect @cmath {
-      irdl.type @complex_flexible {
+    irdl.dialect cmath {
+      irdl.type complex_flexible {
         %0 = irdl.any
         irdl.parameters(%0)
       }
@@ -653,13 +650,13 @@ def IRDL_CPredOp : IRDL_Op<"c_pred"> {
 
     Example:
     ```mlir
-    irdl.type @op_with_attr {
+    irdl.type op_with_attr {
       %0 = irdl.c_pred "::llvm::isa<::mlir::IntegerAttr>($_self)"
       irdl.parameters(%0)
     }
     ```
 
-    In this example, @op_with_attr is defined as a type with a single
+    In this example, op_with_attr is defined as a type with a single
     parameter, which is an `IntegerAttr`, as constrained by the C++ predicate.
   }];
 

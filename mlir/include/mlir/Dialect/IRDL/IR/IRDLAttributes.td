@@ -17,6 +17,11 @@ include "IRDL.td"
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/EnumAttr.td"
 
+class IRDL_Attr<string attrName, string attrMnemonic, list<Trait> traits = []>
+    : AttrDef<IRDL_Dialect, attrName, traits> {
+  let mnemonic = attrMnemonic;
+}
+
 def Variadicity : I32EnumAttr<
     "Variadicity", "variadicity kind",
     [
@@ -48,5 +53,20 @@ def VariadicityAttr : EnumAttr<IRDL_Dialect, Variadicity, "variadicity"> {
 
 def VariadicityArrayAttr : ArrayOfAttr<IRDL_Dialect, "VariadicityArray", "variadicity_array",
                             VariadicityAttr.cppClassName> {}
+
+def DialectItemAttr : IRDL_Attr<"DialectItem", "dialect_item", []> {
+  let description = [{
+    Targets a named item of a specific dialect (operation, type or attribute).
+
+    The referred item must be defined in the same IR module as this attribute.
+  }];
+  let parameters = (ins
+    "StringAttr":$dialect,
+    "StringAttr":$item
+  );
+  let assemblyFormat = [{
+    $dialect `->` $item
+  }];
+}
 
 #endif // MLIR_DIALECT_IRDL_IR_IRDLATTRIBUTES
